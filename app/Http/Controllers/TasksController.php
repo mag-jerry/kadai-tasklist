@@ -25,16 +25,14 @@ class TasksController extends Controller
                 'tasks' => $tasks,
             ];
             $data += $this->counts($user);
-            return view('users.show', $data);
+            
+            return view('tasks.index', $data);
+        
         }else {
             return view('welcome');
         }
         
-        /*
-        $tasks = Task::all();
-        
-        return view('tasks.index',['tasks'=>$tasks,]);
-        */
+
     }
 
     /**
@@ -66,18 +64,9 @@ class TasksController extends Controller
             'status' => $request->status,
         ]);
         
-        return redirect()->back();
-       
-       /* 
-        $this->validate($request,['status' => 'required|max:10',]);
-         
-        $task = new Task;
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
-        
         return redirect('/');
-        */
+       
+
     }
 
     /**
@@ -89,8 +78,12 @@ class TasksController extends Controller
     public function show($id)
     {
        $task = Task::find($id);
+       
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.show',['task'=>$task,]);
+        }
         
-        return view('tasks.show',['task'=>$task,]);
+        return redirect('/');
     }
 
     /**
@@ -102,8 +95,12 @@ class TasksController extends Controller
     public function edit($id)
     {
         $task = Task::find($id);
+        
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.edit',['task'=>$task,]);
+        }
          
-        return view('tasks.edit',['task'=>$task,]);
+        return redirect('/');
     }
 
     /**
@@ -118,9 +115,12 @@ class TasksController extends Controller
         $this->validate($request,['status' => 'required|max:10',]);
     
         $task = Task::find($id);
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
+        if (\Auth::id() === $task->user_id) {
+        
+            $task->status = $request->status;
+            $task->content = $request->content;
+            $task->save();
+        }
         
         return redirect('/');
     }
@@ -139,13 +139,7 @@ class TasksController extends Controller
             $task->delete();
         }
 
-        return redirect()->back();
-        
-       /*
-        $task = Task::find($id);
-        $task->delete();
-        
         return redirect('/');
-        */
+        
     }
 }
